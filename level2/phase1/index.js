@@ -77,4 +77,5 @@ app.listen(port, () => {
 })
 
 // Without redis  157ms
+// with redis 58
 
