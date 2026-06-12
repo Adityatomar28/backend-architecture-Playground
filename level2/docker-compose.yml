@@ -1,0 +1,8 @@
+services:
+  redis:
+    image: redis
+
+    # agr abhi ham isse aaise hi run krdenge toh redis ko bus redis container k andr hi use kr payenge 
+    # therefore Local machine p use krne k liye port mapping krenge
+    ports:
+      - "6379:6379"
