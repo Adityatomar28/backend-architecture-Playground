@@ -57,6 +57,8 @@ app.get("/get-with-redis", async (req, res) => {
 
 app.post("/create", async (req, res) => {
     const { name, email, password } = req.body
+    // when we have to del the user we have to pass the key with value in the bracket
+    await redis.del("user:all")
     const user = await User.create({
         username: name,
         email: email,
