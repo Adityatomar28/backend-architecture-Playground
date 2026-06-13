@@ -11,13 +11,10 @@ const port = process.env.PORT || 5000
 const app = express()
 
 
-
-
-
 app.use(express.json())
 
 // Creating the redis instance
-const redis = new Redis(process.env.REDIS_URL);
+export const redis = new Redis(process.env.REDIS_URL);
 
 redis.on("error", (err) => {
     console.log("Redis Client Error", err);
@@ -67,7 +64,7 @@ app.post("/create", async (req, res) => {
     return res.status(200).json({ message: "User created successfully", user })
 })
 
-app.get("/get", async (req, res) => {
+app.get("/get", rateLimiter,async (req, res) => {
     const users = await User.find({})
     return res.status(200).json({ message: "Users retrieved successfully", users })
 })
@@ -98,27 +95,6 @@ app.post("/verify-otp", async (req, res) => {
     return res.json({message:"otp verified successfully"})
  
 })
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 app.listen(port, () => {
     connectDb()
     console.log(`Server is running on port no http://localhost:${port}`)
