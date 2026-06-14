@@ -3,6 +3,7 @@ import dotenv from "dotenv"
 import connectDb from "./lib/db.js";
 import User from "./model/user.model.js"
 import Redis from "ioredis";
+import emailQueue from "./queue.js";
 
 dotenv.config();
 
@@ -14,7 +15,7 @@ const app = express()
 app.use(express.json())
 
 // Creating the redis instance
-export const redis = new Redis(process.env.REDIS_URL);
+const redis = new Redis(process.env.REDIS_URL);
 
 redis.on("error", (err) => {
     console.log("Redis Client Error", err);
@@ -46,7 +47,7 @@ app.get("/get-with-redis", async (req, res) => {
 
     const user = await User.findOne({})
 
-    //Now when chache hit we will not store that data in redis
+    //Now when chache miss we will not store that data in redis
     await redis.set("user:all", JSON.stringify(user), "EX", 60)
 
     return res.json(user)
@@ -54,47 +55,24 @@ app.get("/get-with-redis", async (req, res) => {
 
 app.post("/create", async (req, res) => {
     const { name, email, password } = req.body
-    // when we have to del the user we have to pass the key with value in the bracket
-    await redis.del("user:all")
     const user = await User.create({
         username: name,
         email: email,
         password: password
     })
+    // await sendEmail()
+    await emailQueue.add("send-Email", { email })
+
+
     return res.status(200).json({ message: "User created successfully", user })
 })
 
-app.get("/get", rateLimiter,async (req, res) => {
+app.get("/get", async (req, res) => {
     const users = await User.find({})
     return res.status(200).json({ message: "Users retrieved successfully", users })
 })
 
-// OTP CACHING
-// creating api for sending otp
 
-app.post("/send-otp", async (req, res) => {
-    const {email} = req.body;
-    //step 1 generate otp
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    //step 2 store otp in redis with expiry time of 5 min
-    await redis.set(`otp:${email}`, otp, "EX", 10)
-    //step 3 send otp to user email (skipped here)
-    return res.status(200).json({ message: "OTP sent successfully" ,otp})
-
-})
-
-app.post("/verify-otp", async (req, res) => {
-    const {email,otp}= req.body;
-
-    const cachedOtp =  await redis.get(`otp:${email}`)
-
-    if(!cachedOtp){
-        return res.status(400).json({ "message": "OTP expired or not found expired"})
-    }   
-
-    return res.json({message:"otp verified successfully"})
- 
-})
 app.listen(port, () => {
     connectDb()
     console.log(`Server is running on port no http://localhost:${port}`)
