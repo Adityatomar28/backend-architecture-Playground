@@ -1,0 +1,31 @@
+step 1 :Event
+
+events{
+
+}
+
+Step 2: write http and inside http write the server 
+
+http{
+    upstream backend{
+        #we can write all the urls here 
+        server server1:7000;
+        server server2:7000;
+        server server3:7000;
+    }
+
+
+    
+    server{
+    #inside the server we define in which server we are listening nginx is listening to a request
+
+      listen 80;
+      // here we have to define that for what purpose we are using the nginx as webserver or load balacer
+      location /{
+        here we have to give the name of the container
+        proxy_pass http://backend;
+        
+      }
+
+    }
+}

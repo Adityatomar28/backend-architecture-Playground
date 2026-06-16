@@ -1,0 +1,2 @@
+we are storing otp in redis why ?
+->we have to expire the database in 5min so if we store otp in Database we have to write logic manually but in redis to expire key we already have built in function for example (EX:30sec)

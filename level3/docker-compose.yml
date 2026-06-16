@@ -1,0 +1,44 @@
+services:
+  nginx:
+    image: nginx
+
+    #To use in our local machine we have to do port mapping 
+    ports: -8000:80
+
+    volumes:
+      - ./nginx/nginx.conf:etc/nginx/nginx.config
+
+    # creating the container
+    server1:
+      #we are using the build beacause we extracting images from the docker file
+      build: ./server1
+      #so that port can be used 
+      env_file:
+        - ./server1/.env
+      ports:
+        - 5000:7000
+
+    server2:
+      #we are using the build beacause we extracting images from the docker file
+      build: ./server1
+      #so that port can be used 
+      env_file:
+        - ./server1/.env
+      ports:
+        - 5001:7000
+
+    server3:
+      #we are using the build beacause we extracting images from the docker file
+      build: ./server1
+      #so that port can be used 
+      env_file:
+        - ./server1/.env
+      ports:
+        - 5002:7000
+
+#Here container port is same across diffrent server beacuse docker container runs in isolated it dont care outside 
+# docker apne isolate env m saare port m s 7000 p run kr rha hai same as locol host of diffrent devices of our diffrent diffrent laptop
+#we have change 5001,5002,--- because this is out local machine is only one 
+
+
+#to check load we can install the autocannon
